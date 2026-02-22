@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: example-rollout-bluegreen
+  labels:
+    app.kubernetes.io/name: guestbook-ui
+    app.kubernetes.io/instance: guestbook-ui
+    app.kubernetes.io/version: "5"
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: principal-unit
+    app.kubernetes.io/managed-by: Helm
+
+spec:
+  replicas: 5
+
+  selector:
+    matchLabels:
+      app: guestbook-ui-bluegreen
+
+  template:
+    metadata:
+      labels:
+        app: guestbook-ui-bluegreen
+    spec:
+      containers:
+      - image: gcr.io/google-samples/gb-frontend:v5
+        name: guestbook-ui
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        resources:
+          requests:
+            memory: 32Mi
+            cpu: 5m
+
+  revisionHistoryLimit: 2
+
+  strategy:
+    blueGreen:
+      activeService: guestbook-ui-bluegreen-active
+      previewService: guestbook-ui-bluegreen-preview
+      autoPromotionEnabled: false
+      #previewReplicaCount: 2
+      scaleDownDelaySeconds: 120
+      

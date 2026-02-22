@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guestbook-ui-recreate
+  labels:
+    app.kubernetes.io/name: guestbook-ui
+    app.kubernetes.io/instance: guestbook-ui
+    app.kubernetes.io/version: "5"
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: principal-unit
+    app.kubernetes.io/managed-by: Helm
+spec:
+  strategy:
+    type: Recreate
+  replicas: 5
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: guestbook-ui
+  template:
+    metadata:
+      labels:
+        app: guestbook-ui
+        type: recreate
+    spec:
+      containers:
+        - image: gcr.io/google-samples/gb-frontend:v5
+          name: guestbook-ui
+          ports:
+          - name: http
+            containerPort: 80
+            protocol: TCP
+          resources:
+            requests:
+              memory: 32Mi
+              cpu: 5m
