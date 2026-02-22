@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: guestbook-ui
+  name: example-rollout-canary
   labels:
     app.kubernetes.io/name: guestbook-ui
     app.kubernetes.io/instance: guestbook-ui
@@ -11,25 +11,15 @@ metadata:
     app.kubernetes.io/managed-by: Helm
 spec:
   replicas: 5
-  strategy:
-    canary:
-      steps:
-      - setWeight: 20
-      - pause: {}
-      - setWeight: 40
-      - pause: {duration: 10}
-      - setWeight: 60
-      - pause: {duration: 10}
-      - setWeight: 80
-      - pause: {duration: 10}
-  revisionHistoryLimit: 2
+
   selector:
     matchLabels:
-      app: guestbook-ui
+      app: guestbook-ui-canary
+
   template:
     metadata:
       labels:
-        app: guestbook-ui
+        app: guestbook-ui-canary
     spec:
       containers:
       - image: gcr.io/google-samples/gb-frontend:v5
@@ -42,3 +32,20 @@ spec:
           requests:
             memory: 32Mi
             cpu: 5m
+
+  revisionHistoryLimit: 2
+
+  strategy:
+    canary:
+      steps:
+      - setWeight: 20
+      - pause: {}
+      - setWeight: 40
+      - pause: {duration: 10}
+      - setWeight: 60
+      - pause: {duration: 10}
+      - setWeight: 80
+      - pause: {duration: 10}
+      canaryService: guestbook-ui-canary-active
+      stableService: guestbook-ui-canary-preview
+      
